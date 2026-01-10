@@ -1,0 +1,56 @@
+name: Feature Branch CI/CD
+
+on:
+  push:
+    branches: 
+      - feature/*
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+      - name: Run tests
+        id: test
+        run: pytest
+
+  comment-results:
+    needs: test-python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get PR number
+        id: get-pr-number
+        run: echo "::set-output name=pr_number::$(echo $GITHUB_REF | sed 's/refs\/pull\///' | cut -d '/' -f 1)"
+      - name: Comment test results on PR
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const checkRunId = '${{ needs.test-python.outputs.check_run_id }}';
+            const conclusion = 'success';
+            const output = {
+              title: 'Feature Branch Test Results',
+              summary: `Test run completed successfully.`,
+              text: `View test details [here](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${checkRunId}).`
+            };
+            github.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: checkRunId,
+              conclusion: conclusion,
+              output: output
+            });
+        if: needs.test-python.outcome == 'success'

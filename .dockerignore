@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Tests
+tests/
+__tests__/
+*.test.*
+*.spec.*
+coverage/
+.coverage
+htmlcov/

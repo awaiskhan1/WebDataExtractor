@@ -1,0 +1,9 @@
+fastapi==0.95.0
+uvicorn==0.21.3
+pydantic==1.10.8  # Note: Use Pydantic v2 for production but this is temporary
+sqlalchemy==1.4.46
+alembic==1.7.5
+httpx==0.23.3
+python-dotenv==1.0.0
+pytest==7.2.0
+pytest-asyncio==0.18.1
