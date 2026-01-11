@@ -1,3 +1,3 @@
-from .main import Orchestrator
+from .main import app
 
-__all__ = ['Orchestrator']
+__all__ = ['app']

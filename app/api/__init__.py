@@ -1,2 +1,3 @@
-from . import routes
-from .base import APIRouter, create_api_router
+from .routes import router
+
+__all__ = ['router']

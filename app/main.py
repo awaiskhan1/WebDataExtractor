@@ -1,27 +1,30 @@
-from fastapi import FastAPI, Request, HTTPException, Depends, BackgroundTasks
-from pydantic import BaseModel, Field
-import httpx
-from aiosqlite import connect as aiosqlite_connect
-from rich import print
-from typer import run
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 from typing import Optional
-from .src.orchestrator import Orchestrator
-from .src.agents.base_agent import BaseAgent
-from .src.agents.extractor_agent import ExtractorAgent
-from .src.agents.organizer_agent import OrganizerAgent
+import logging
 
-app = FastAPI()
+from .api.routes import router as api_router
+from .config import settings
 
-# Dependency for getting the orchestrator instance
-async def get_orchestrator():
-    return await Orchestrator.setup()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Middleware to log each request and response
+app = FastAPI(
+    title="WebDataExtractor API",
+    description="API for extracting and organizing web data",
+    version="1.0.0"
+)
+
+# Include API routes
+app.include_router(api_router, prefix="/api")
+
+# Middleware to log requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    print(f"Request path: {request.url.path}")
+    logger.info(f"Request: {request.method} {request.url.path}")
     response = await call_next(request)
-    print(f"Response status code: {response.status_code}")
+    logger.info(f"Response: {response.status_code}")
     return response
 
 # Exception handler for HTTP exceptions
@@ -32,35 +35,18 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={"detail": exc.detail},
     )
 
-# Background task function to handle data extraction and organization
-async def background_task(orchestrator: Orchestrator):
-    await orchestrator.run()
-
 @app.get("/")
 async def read_root():
-    return {"message": "Welcome to the Data Extraction API"}
+    return {
+        "message": "Welcome to WebDataExtractor API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
-@app.post("/extract/")
-async def extract_data(url: str = Field(..., description="URL of the website to extract data from"), background_tasks: BackgroundTasks = Depends()):
-    async with aiosqlite_connect("data.db") as db:
-        await db.execute("CREATE TABLE IF NOT EXISTS extracted_data (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, data TEXT)")
-    
-    orchestrator = await get_orchestrator()
-    extractor_agent = ExtractorAgent(url=url)
-    organizer_agent = OrganizerAgent()
-
-    # Add agents to the orchestrator
-    orchestrator.add_agent(extractor_agent)
-    orchestrator.add_agent(organizer_agent)
-
-    background_tasks.add_task(background_task, orchestrator=orchestrator)
-    return {"message": "Data extraction started in the background"}
-
-# Lifespan event handler to initialize the database
-@app.on_event("startup")
-async def startup():
-    async with aiosqlite_connect("data.db") as db:
-        await db.execute("CREATE TABLE IF NOT EXISTS extracted_data (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, data TEXT)")
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
-    run(app)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

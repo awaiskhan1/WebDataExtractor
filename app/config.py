@@ -1,4 +1,6 @@
+import os
 from pydantic import BaseModel, Field, SecretStr
+from typing import Optional
 
 class DatabaseSettings(BaseModel):
     database_url: str = Field(..., env='DATABASE_URL', description="The URL of the database")
