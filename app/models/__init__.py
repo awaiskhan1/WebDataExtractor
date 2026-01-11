@@ -1,3 +1,4 @@
-from .data_record import DataRecord
-from .web_page import WebPage
-from .extracted_data import ExtractedData
+# Models package initialization
+from .schemas import ExtractRequest, ExtractResponse, OrganizeRequest, OrganizeResponse
+
+__all__ = ['ExtractRequest', 'ExtractResponse', 'OrganizeRequest', 'OrganizeResponse']

@@ -1,85 +1,44 @@
 import pytest
 from pydantic import ValidationError
-from app.models.schemas import User, Product
+from app.models.schemas import ExtractRequest, ExtractResponse, OrganizeRequest, OrganizeResponse
 
-class TestUserSchema:
-    """Tests for User schema functionality."""
+class TestExtractSchemas:
+    """Tests for Extract schema functionality."""
     
-    def test_user_with_valid_data(self):
-        """Test with valid user data."""
-        input_data = {
-            "id": 1,
-            "username": "john_doe",
-            "email": "john.doe@example.com"
-        }
-        
-        user = User(**input_data)
-        assert user.id == 1
-        assert user.username == "john_doe"
-        assert user.email == "john.doe@example.com"
+    def test_extract_request_with_valid_data(self):
+        """Test with valid extract request data."""
+        request = ExtractRequest(url="https://example.com", extract_type="text")
+        assert request.url == "https://example.com"
+        assert request.extract_type == "text"
 
-    def test_user_with_missing_required_field(self):
-        """Test with missing required field."""
-        input_data = {
-            "username": "john_doe",
-            "email": "john.doe@example.com"
-        }
-        
-        with pytest.raises(ValidationError) as e:
-            User(**input_data)
-        assert "id" in str(e.value)
+    def test_extract_request_with_default_type(self):
+        """Test extract request with default type."""
+        request = ExtractRequest(url="https://example.com")
+        assert request.extract_type == "text"
 
-    def test_user_with_invalid_email(self):
-        """Test with invalid email format."""
-        input_data = {
-            "id": 1,
-            "username": "john_doe",
-            "email": "invalid-email"
-        }
-        
-        with pytest.raises(ValidationError) as e:
-            User(**input_data)
-        assert "email" in str(e.value)
+    def test_extract_response_success(self):
+        """Test successful extract response."""
+        response = ExtractResponse(success=True, output="Extracted data")
+        assert response.success is True
+        assert response.output == "Extracted data"
 
-class TestProductSchema:
-    """Tests for Product schema functionality."""
+    def test_extract_response_failure(self):
+        """Test failed extract response."""
+        response = ExtractResponse(success=False, error="Failed to extract")
+        assert response.success is False
+        assert response.error == "Failed to extract"
+
+class TestOrganizeSchemas:
+    """Tests for Organize schema functionality."""
     
-    def test_product_with_valid_data(self):
-        """Test with valid product data."""
-        input_data = {
-            "id": 1,
-            "name": "Laptop",
-            "price": 999.99,
-            "description": "High-performance laptop"
-        }
-        
-        product = Product(**input_data)
-        assert product.id == 1
-        assert product.name == "Laptop"
-        assert product.price == 999.99
-        assert product.description == "High-performance laptop"
+    def test_organize_request_with_valid_data(self):
+        """Test with valid organize request data."""
+        request = OrganizeRequest(data="test data", format="json")
+        assert request.data == "test data"
+        assert request.format == "json"
 
-    def test_product_with_missing_required_field(self):
-        """Test with missing required field."""
-        input_data = {
-            "name": "Laptop",
-            "price": 999.99,
-            "description": "High-performance laptop"
-        }
-        
-        with pytest.raises(ValidationError) as e:
-            Product(**input_data)
-        assert "id" in str(e.value)
-
-    def test_product_with_negative_price(self):
-        """Test with negative price."""
-        input_data = {
-            "id": 1,
-            "name": "Laptop",
-            "price": -100.00,
-            "description": "High-performance laptop"
-        }
-        
-        with pytest.raises(ValidationError) as e:
-            Product(**input_data)
-        assert "price" in str(e.value)
+    def test_organize_response_success(self):
+        """Test successful organize response."""
+        response = OrganizeResponse(success=True, output='{"data": "organized"}')
+        assert response.success is True
+        assert response.output == '{"data": "organized"}'

@@ -1,1 +1,4 @@
-from .base import AsyncSession, engine, get_db
+# Database package initialization
+from .session import get_db
+
+__all__ = ['get_db']
