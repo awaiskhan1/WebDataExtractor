@@ -2,7 +2,7 @@
 
 import pytest
 from httpx import AsyncClient
-from main import app  # Use absolute import from project root
+from app.main import app
 
 @pytest.fixture(scope="module")
 async def client():

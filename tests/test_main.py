@@ -1,9 +1,10 @@
 import pytest
-from fastapi import FastAPI, HTTPException
-from celery.result import AsyncResult
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 from typing import Any
+from app.main import app
 
-app = FastAPI()
+client = TestClient(app)
 
 class TestAppMain:
     """Tests for the main application functionality."""
